@@ -1,23 +1,4 @@
 <?php
-/* 
-Added Development Environment/localhost check to return localhost URL 
-inspired by http://codex.wordpress.org/Running_a_Development_Copy_of_WordPress
-Author: @khbites
-*/
-
-add_filter ( 'pre_option_home', 'test_localhosts' );
-add_filter ( 'pre_option_siteurl', 'test_localhosts' );
-function test_localhosts( ) {
-  /* DB URL is set with SetEnv in Apache https://github.com/mhoofman/wordpress-heroku#linux-or-manual-apache-config */
-
-  if (preg_match('/localhost/',$_ENV['DATABASE_URL'])) {
-    preg_match('/(.*)\/wp-.*\/(\w*\.php)+$/', $_SERVER['REQUEST_URI'], $path);
-    return ("http://" . $_SERVER['HTTP_HOST'] . $path[1]);
-  }
-
-  else return false; // act as normal; will pull main site info from db
-}
-
 /*
 Plugin Name: PostgreSQL for WordPress (PG4WP)
 Plugin URI: http://www.hawkix.net
@@ -41,10 +22,7 @@ define( 'PG4WP_LOG_ERRORS', false);
 
 // If you want to allow insecure configuration (from the author point of view) to work with PG4WP,
 // change this to true
-define( 'PG4WP_INSECURE', true);
-
-// Not entirely sure why this needs to be set, but it seems to be required since wp version 4
-define('WP_USE_EXT_MYSQL', true);
+define( 'PG4WP_INSECURE', false);
 
 // This defines the directory where PG4WP files are loaded from
 //   2 places checked : wp-content and wp-content/plugins

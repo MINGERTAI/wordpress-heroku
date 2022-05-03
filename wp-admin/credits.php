@@ -7,186 +7,136 @@
  */
 
 /** WordPress Administration Bootstrap */
-require_once( dirname( __FILE__ ) . '/admin.php' );
+require_once __DIR__ . '/admin.php';
+require_once __DIR__ . '/includes/credits.php';
 
+// Used in the HTML title tag.
 $title = __( 'Credits' );
 
-/**
- * Retrieve the contributor credits.
- *
- * @global string $wp_version The current WordPress version.
- *
- * @since 3.2.0
- *
- * @return array|bool A list of all of the contributors, or false on error.
-*/
-function wp_credits() {
-	global $wp_version;
-	$locale = get_locale();
+list( $display_version ) = explode( '-', get_bloginfo( 'version' ) );
 
-	$results = get_site_transient( 'wordpress_credits_' . $locale );
-
-	if ( ! is_array( $results )
-		|| false !== strpos( $wp_version, '-' )
-		|| ( isset( $results['data']['version'] ) && strpos( $wp_version, $results['data']['version'] ) !== 0 )
-	) {
-		$response = wp_remote_get( "http://api.wordpress.org/core/credits/1.1/?version=$wp_version&locale=$locale" );
-
-		if ( is_wp_error( $response ) || 200 != wp_remote_retrieve_response_code( $response ) )
-			return false;
-
-		$results = json_decode( wp_remote_retrieve_body( $response ), true );
-
-		if ( ! is_array( $results ) )
-			return false;
-
-		set_site_transient( 'wordpress_credits_' . $locale, $results, DAY_IN_SECONDS );
-	}
-
-	return $results;
-}
-
-/**
- * Retrieve the link to a contributor's WordPress.org profile page.
- *
- * @access private
- * @since 3.2.0
- *
- * @param string &$display_name The contributor's display name, passed by reference.
- * @param string $username      The contributor's username.
- * @param string $profiles      URL to the contributor's WordPress.org profile page.
- * @return string A contributor's display name, hyperlinked to a WordPress.org profile page.
- */
-function _wp_credits_add_profile_link( &$display_name, $username, $profiles ) {
-	$display_name = '<a href="' . esc_url( sprintf( $profiles, $username ) ) . '">' . esc_html( $display_name ) . '</a>';
-}
-
-/**
- * Retrieve the link to an external library used in WordPress.
- *
- * @access private
- * @since 3.2.0
- *
- * @param string &$data External library data, passed by reference.
- * @return string Link to the external library.
- */
-function _wp_credits_build_object_link( &$data ) {
-	$data = '<a href="' . esc_url( $data[1] ) . '">' . $data[0] . '</a>';
-}
-
-list( $display_version ) = explode( '-', $wp_version );
-
-include( ABSPATH . 'wp-admin/admin-header.php' );
-?>
-<div class="wrap about-wrap">
-
-<h1><?php printf( __( 'Welcome to WordPress %s' ), $display_version ); ?></h1>
-
-<div class="about-text"><?php printf( __( 'Thank you for updating! WordPress %s helps you focus on your writing, and the new default theme lets you show it off in style.' ), $display_version ); ?></div>
-
-<div class="wp-badge"><?php printf( __( 'Version %s' ), $display_version ); ?></div>
-
-<h2 class="nav-tab-wrapper">
-	<a href="about.php" class="nav-tab">
-		<?php _e( 'What&#8217;s New' ); ?>
-	</a><a href="credits.php" class="nav-tab nav-tab-active">
-		<?php _e( 'Credits' ); ?>
-	</a><a href="freedoms.php" class="nav-tab">
-		<?php _e( 'Freedoms' ); ?>
-	</a>
-</h2>
-
-<?php
+require_once ABSPATH . 'wp-admin/admin-header.php';
 
 $credits = wp_credits();
+?>
+<div class="wrap about__container">
 
+	<div class="about__header">
+		<div class="about__header-title">
+			<h1>
+				<?php _e( 'Contributors' ); ?>
+			</h1>
+		</div>
+
+		<div class="about__header-text">
+			<?php
+			printf(
+				/* translators: %s: Version number. */
+				__( 'WordPress %s was created by a worldwide team of passionate individuals' ),
+				$display_version
+			);
+			?>
+		</div>
+
+		<nav class="about__header-navigation nav-tab-wrapper wp-clearfix" aria-label="<?php esc_attr_e( 'Secondary menu' ); ?>">
+			<a href="about.php" class="nav-tab"><?php _e( 'What&#8217;s New' ); ?></a>
+			<a href="credits.php" class="nav-tab nav-tab-active" aria-current="page"><?php _e( 'Credits' ); ?></a>
+			<a href="freedoms.php" class="nav-tab"><?php _e( 'Freedoms' ); ?></a>
+			<a href="privacy.php" class="nav-tab"><?php _e( 'Privacy' ); ?></a>
+		</nav>
+	</div>
+
+	<div class="about__section has-1-column">
+		<div class="column aligncenter">
+			<?php if ( ! $credits ) : ?>
+
+			<p>
+				<?php
+				printf(
+					/* translators: 1: https://wordpress.org/about/ */
+					__( 'WordPress is created by a <a href="%1$s">worldwide team</a> of passionate individuals.' ),
+					__( 'https://wordpress.org/about/' )
+				);
+				?>
+				<br />
+				<a href="https://make.wordpress.org/"><?php _e( 'Get involved in WordPress.' ); ?></a>
+			</p>
+
+			<?php else : ?>
+
+			<p>
+				<?php _e( 'Want to see your name in lights on this page?' ); ?>
+				<br />
+				<a href="https://make.wordpress.org/"><?php _e( 'Get involved in WordPress.' ); ?></a>
+			</p>
+
+			<?php endif; ?>
+		</div>
+	</div>
+
+<?php
 if ( ! $credits ) {
-	echo '<p class="about-description">' . sprintf( __( 'WordPress is created by a <a href="%1$s">worldwide team</a> of passionate individuals. <a href="%2$s">Get involved in WordPress</a>.' ),
-		'https://wordpress.org/about/',
-		/* translators: Url to the codex documentation on contributing to WordPress used on the credits page */
-		__( 'http://codex.wordpress.org/Contributing_to_WordPress' ) ) . '</p>';
-	include( ABSPATH . 'wp-admin/admin-footer.php' );
+	echo '</div>';
+	require_once ABSPATH . 'wp-admin/admin-footer.php';
 	exit;
 }
-
-echo '<p class="about-description">' . __( 'WordPress is created by a worldwide team of passionate individuals.' ) . "</p>\n";
-
-$gravatar = is_ssl() ? 'https://secure.gravatar.com/avatar/' : 'http://0.gravatar.com/avatar/';
-
-foreach ( $credits['groups'] as $group_slug => $group_data ) {
-	if ( $group_data['name'] ) {
-		if ( 'Translators' == $group_data['name'] ) {
-			// Considered a special slug in the API response. (Also, will never be returned for en_US.)
-			$title = _x( 'Translators', 'Translate this to be the equivalent of English Translators in your language for the credits page Translators section' );
-		} elseif ( isset( $group_data['placeholders'] ) ) {
-			$title = vsprintf( translate( $group_data['name'] ), $group_data['placeholders'] );
-		} else {
-			$title = translate( $group_data['name'] );
-		}
-
-		echo '<h4 class="wp-people-group">' . $title . "</h4>\n";
-	}
-
-	if ( ! empty( $group_data['shuffle'] ) )
-		shuffle( $group_data['data'] ); // We were going to sort by ability to pronounce "hierarchical," but that wouldn't be fair to Matt.
-
-	switch ( $group_data['type'] ) {
-		case 'list' :
-			array_walk( $group_data['data'], '_wp_credits_add_profile_link', $credits['data']['profiles'] );
-			echo '<p class="wp-credits-list">' . wp_sprintf( '%l.', $group_data['data'] ) . "</p>\n\n";
-			break;
-		case 'libraries' :
-			array_walk( $group_data['data'], '_wp_credits_build_object_link' );
-			echo '<p class="wp-credits-list">' . wp_sprintf( '%l.', $group_data['data'] ) . "</p>\n\n";
-			break;
-		default:
-			$compact = 'compact' == $group_data['type'];
-			$classes = 'wp-people-group ' . ( $compact ? 'compact' : '' );
-			echo '<ul class="' . $classes . '" id="wp-people-group-' . $group_slug . '">' . "\n";
-			foreach ( $group_data['data'] as $person_data ) {
-				echo '<li class="wp-person" id="wp-person-' . $person_data[2] . '">' . "\n\t";
-				echo '<a href="' . sprintf( $credits['data']['profiles'], $person_data[2] ) . '">';
-				$size = 'compact' == $group_data['type'] ? '30' : '60';
-				echo '<img src="' . $gravatar . $person_data[1] . '?s=' . $size . '" class="gravatar" alt="' . esc_attr( $person_data[0] ) . '" /></a>' . "\n\t";
-				echo '<a class="web" href="' . sprintf( $credits['data']['profiles'], $person_data[2] ) . '">' . $person_data[0] . "</a>\n\t";
-				if ( ! $compact )
-					echo '<span class="title">' . translate( $person_data[3] ) . "</span>\n";
-				echo "</li>\n";
-			}
-			echo "</ul>\n";
-		break;
-	}
-}
-
 ?>
-<p class="clear"><?php printf( __( 'Want to see your name in lights on this page? <a href="%s">Get involved in WordPress</a>.' ),
-	/* translators: URL to the Make WordPress 'Get Involved' landing page used on the credits page */
-	__( 'https://make.wordpress.org/' ) ); ?></p>
 
+	<hr />
+
+	<div class="about__section">
+		<div class="column is-edge-to-edge">
+			<?php wp_credits_section_title( $credits['groups']['core-developers'] ); ?>
+			<?php wp_credits_section_list( $credits, 'core-developers' ); ?>
+			<?php wp_credits_section_list( $credits, 'contributing-developers' ); ?>
+		</div>
+	</div>
+
+	<hr />
+
+	<div class="about__section">
+		<div class="column">
+			<?php wp_credits_section_title( $credits['groups']['props'] ); ?>
+			<?php wp_credits_section_list( $credits, 'props' ); ?>
+		</div>
+	</div>
+
+	<hr />
+
+	<?php if ( isset( $credits['groups']['translators'] ) || isset( $credits['groups']['validators'] ) ) : ?>
+	<div class="about__section">
+		<div class="column">
+			<?php wp_credits_section_title( $credits['groups']['validators'] ); ?>
+			<?php wp_credits_section_list( $credits, 'validators' ); ?>
+			<?php wp_credits_section_list( $credits, 'translators' ); ?>
+		</div>
+	</div>
+
+	<hr />
+	<?php endif; ?>
+
+	<div class="about__section">
+		<div class="column">
+			<?php wp_credits_section_title( $credits['groups']['libraries'] ); ?>
+			<?php wp_credits_section_list( $credits, 'libraries' ); ?>
+		</div>
+	</div>
 </div>
 <?php
 
-include( ABSPATH . 'wp-admin/admin-footer.php' );
+require_once ABSPATH . 'wp-admin/admin-footer.php';
 
 return;
 
-// These are strings returned by the API that we want to be translatable
+// These are strings returned by the API that we want to be translatable.
 __( 'Project Leaders' );
-__( 'Extended Core Team' );
-__( 'Core Developers' );
-__( 'Recent Rockstars' );
+/* translators: %s: The current WordPress version number. */
 __( 'Core Contributors to WordPress %s' );
-__( 'Contributing Developers' );
+__( 'Noteworthy Contributors' );
 __( 'Cofounder, Project Lead' );
 __( 'Lead Developer' );
 __( 'Release Lead' );
-__( 'User Experience Lead' );
+__( 'Release Design Lead' );
+__( 'Release Deputy' );
 __( 'Core Developer' );
-__( 'Core Committer' );
-__( 'Guest Committer' );
-__( 'Developer' );
-__( 'Designer' );
-__( 'XML-RPC' );
-__( 'Internationalization' );
 __( 'External Libraries' );
-__( 'Icon Design' );

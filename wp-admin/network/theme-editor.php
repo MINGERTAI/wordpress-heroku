@@ -1,6 +1,6 @@
 <?php
 /**
- * Theme editor network administration panel.
+ * Theme file editor network administration panel.
  *
  * @package WordPress
  * @subpackage Multisite
@@ -8,9 +8,6 @@
  */
 
 /** Load WordPress Administration Bootstrap */
-require_once( dirname( __FILE__ ) . '/admin.php' );
+require_once __DIR__ . '/admin.php';
 
-if ( ! is_multisite() )
-	wp_die( __( 'Multisite support is not enabled.' ) );
-
-require( ABSPATH . 'wp-admin/theme-editor.php' );
+require ABSPATH . 'wp-admin/theme-editor.php';
